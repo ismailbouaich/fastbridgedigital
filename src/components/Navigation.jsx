@@ -22,7 +22,9 @@ export function Navigation() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      // Simple two-state logic: scrolled or not
+      const scrollThreshold = 50;
+      setIsScrolled(window.scrollY > scrollThreshold);
 
       // Update active section based on scroll position
       const sections = navItems.map(item => item.href);
@@ -38,7 +40,10 @@ export function Navigation() {
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    // Initial check
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -49,51 +54,105 @@ export function Navigation() {
 
   return (
     <>
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-          isScrolled
-            ? "glass-strong shadow-lg"
-            : "bg-transparent"
-        )}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20">
+      {!isScrolled ? (
+        /* 1️⃣ Full-width header - Top of page */
+        <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10">
+          <nav className="px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16 lg:h-20 max-w-7xl mx-auto">
+              {/* Logo */}
+              <div className="shrink-0">
+                <a 
+                  href="#hero" 
+                  onClick={(e) => { e.preventDefault(); handleNavClick("hero"); }}
+                  className="flex items-center gap-2"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <span className="text-white font-bold text-xl">BD</span>
+                  </div>
+                  <span className="text-xl font-bold text-white hidden sm:block">
+                    Bridge<span className="text-gradient">Digital</span>
+                  </span>
+                </a>
+              </div>
+
+              {/* Desktop Navigation */}
+              <div className="hidden lg:flex items-center gap-8">
+                {navItems.map((item) => (
+                  <a
+                    key={item.name}
+                    href={`#${item.href}`}
+                    onClick={(e) => { e.preventDefault(); handleNavClick(item.href); }}
+                    className={cn(
+                      "relative text-sm font-medium transition-colors duration-200",
+                      activeSection === item.href
+                        ? "text-white"
+                        : "text-gray-300 hover:text-white"
+                    )}
+                  >
+                    {item.name}
+                    {activeSection === item.href && (
+                      <motion.div
+                        layoutId="activeSection"
+                        className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                  </a>
+                ))}
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleNavClick("contact")}
+                >
+                  Get Started
+                </Button>
+              </div>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="lg:hidden p-2 rounded-lg text-white hover:bg-white/10 transition-colors"
+              >
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+          </nav>
+        </header>
+      ) : (
+        /* 2️⃣ Compact header - Scrolled state, attached to top */
+        <motion.nav
+          initial={{ opacity: 0, y: -100 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed top-0 left-1/2 -translate-x-1/2 z-50 glass-strong rounded-t-none rounded-b-3xl shadow-2xl px-8"
+          style={{ maxWidth: 'fit-content' }}
+        >
+          <div className="flex items-center gap-6 h-14">
             {/* Logo */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="shrink-0"
-            >
+            <div className="shrink-0">
               <a 
                 href="#hero" 
                 onClick={(e) => { e.preventDefault(); handleNavClick("hero"); }}
                 className="flex items-center gap-2"
               >
-                <div className="w-10 h-10 rounded-lg bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">BD</span>
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">BD</span>
                 </div>
-                <span className="text-xl font-bold text-white hidden sm:block">
+                <span className="text-lg font-bold text-white hidden sm:block">
                   Bridge<span className="text-gradient">Digital</span>
                 </span>
               </a>
-            </motion.div>
+            </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-8">
-              {navItems.map((item, index) => (
-                <motion.a
+            <div className="hidden lg:flex items-center gap-6">
+              {navItems.map((item) => (
+                <a
                   key={item.name}
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index }}
                   href={`#${item.href}`}
                   onClick={(e) => { e.preventDefault(); handleNavClick(item.href); }}
                   className={cn(
-                    "relative text-sm font-medium transition-colors duration-200",
+                    "relative text-sm font-medium transition-colors duration-200 whitespace-nowrap",
                     activeSection === item.href
                       ? "text-white"
                       : "text-gray-300 hover:text-white"
@@ -102,26 +161,20 @@ export function Navigation() {
                   {item.name}
                   {activeSection === item.href && (
                     <motion.div
-                      layoutId="activeSection"
-                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-linear-to-r from-blue-500 to-purple-600"
+                      layoutId="activeSectionScrolled"
+                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
-                </motion.a>
+                </a>
               ))}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6 }}
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => handleNavClick("contact")}
               >
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => handleNavClick("contact")}
-                >
-                  Get Started
-                </Button>
-              </motion.div>
+                Get Started
+              </Button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -132,8 +185,8 @@ export function Navigation() {
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
-        </div>
-      </motion.nav>
+        </motion.nav>
+      )}
 
       {/* Mobile Menu */}
       <AnimatePresence>
