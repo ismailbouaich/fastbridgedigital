@@ -124,7 +124,7 @@ export function Navigation() {
           initial={{ opacity: 0, y: -100 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed top-0 left-1/2 -translate-x-1/2 z-50 glass-strong rounded-t-none rounded-b-3xl shadow-2xl px-8"
+          className="fixed top-0 left-1/2 -translate-x-1/2 z-50 glass-strong rounded-t-none rounded-b-3xl shadow-2xl px-8 border border-white/20"
           style={{ maxWidth: 'fit-content' }}
         >
           <div className="flex items-center gap-6 h-14">
